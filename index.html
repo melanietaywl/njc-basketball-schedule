@@ -274,7 +274,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🏀 NJC Basketball Training Schedule</h1>
+            <h1>NJC Basketball Training Schedule</h1>
         </div>
 
         <div class="filters-section">
@@ -350,9 +350,9 @@
                 // Row 2 is the header (index 1 in array since arrays are 0-indexed)
                 headers = data.values[1];
                 
-                // Create display headers (columns A to U excluding B)
-                // B is index 1, so we exclude it
-                displayHeaders = headers.filter((h, index) => index !== 1);
+                // Create display headers (columns A to U excluding B, A, and D)
+                // Exclude: B (index 1), A (index 0), D (index 3)
+                displayHeaders = headers.filter((h, index) => index !== 0 && index !== 1 && index !== 3);
                 
                 // Process data rows (starting from row 3, which is index 2)
                 const rows = data.values.slice(2);
@@ -521,9 +521,9 @@
 
             filteredData.forEach(row => {
                 tableHTML += '<tr>';
-                // Display data for all columns except column B (index 1)
+                // Display data for all columns except B (index 1), A (index 0), and D (index 3)
                 headers.forEach((header, index) => {
-                    if (index !== 1) { // Skip column B
+                    if (index !== 0 && index !== 1 && index !== 3) { // Skip columns A, B, and D
                         const cellValue = row[header] || '';
                         // Columns O to U are indices 14 to 20 (0-indexed)
                         // Highlight if not empty and not "NA"
