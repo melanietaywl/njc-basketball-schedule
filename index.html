@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NJC Basketball Training Schedule</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                repeating-linear-gradient(90deg, rgba(220, 53, 69, 0.02) 0px, transparent 1px, transparent 50px, rgba(220, 53, 69, 0.02) 51px),
+                repeating-linear-gradient(0deg, rgba(220, 53, 69, 0.02) 0px, transparent 1px, transparent 50px, rgba(220, 53, 69, 0.02) 51px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+            border: 3px solid #dc3545;
+        }
+
+        .header {
+            background: #dc3545;
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '🏀';
+            position: absolute;
+            font-size: 200px;
+            opacity: 0.15;
+            top: -50px;
+            right: -50px;
+            transform: rotate(-15deg);
+        }
+
+        .header::after {
+            content: '🏀';
+            position: absolute;
+            font-size: 150px;
+            opacity: 0.15;
+            bottom: -40px;
+            left: -40px;
+            transform: rotate(20deg);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 0;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .filters-section {
+            padding: 30px;
+            border-bottom: 2px solid #e9ecef;
+            background: white;
+        }
+
+        .filters-grid {
+            display: flex;
+            justify-content: center;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        .filter-group select {
+            padding: 12px 16px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1.05em;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .filter-group select:focus {
+            outline: none;
+            border-color: #dc3545;
+            box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+        }
+
+        .filter-group select:hover {
+            border-color: #dc3545;
+        }
+
+        .results-section {
+            padding: 30px;
+            background: #f8f9fa;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .results-header h2 {
+            color: #2d3748;
+            font-size: 1.5em;
+            font-weight: 700;
+        }
+
+        .results-count {
+            background: #dc3545;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.95em;
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.25);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            max-height: 600px;
+            overflow-y: auto;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+            background: white;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        thead {
+            background: #dc3545;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        th {
+            padding: 16px 18px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9em;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 14px 18px;
+            border-bottom: 1px solid #e9ecef;
+            white-space: nowrap;
+            color: #4a5568;
+        }
+
+        tbody tr {
+            transition: background-color 0.2s;
+        }
+
+        tbody tr:hover {
+            background: #f7fafc;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .empty-state, .loading-state, .error-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .empty-state svg, .loading-state svg, .error-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3, .loading-state h3, .error-state h3 {
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        .error-state {
+            color: #dc3545;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #dc3545;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 0.9em;
+            }
+
+            th, td {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏀 NJC Basketball Training Schedule</h1>
+        </div>
+
+        <div class="filters-section">
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label for="teamFilter">Filter by Team</label>
+                    <select id="teamFilter" disabled>
+                        <option value="">All Teams</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="results-section">
+            <div class="results-header">
+                <h2>📅 Schedule</h2>
+                <span class="results-count hidden" id="resultsCount">0 results</span>
+            </div>
+            <div id="resultsContainer">
+                <div class="loading-state">
+                    <div class="loading-spinner"></div>
+                    <h3>Loading schedule data...</h3>
+                    <p>Please wait while we fetch your data</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // CONFIGURATION - EDIT THESE VALUES
+        // ==========================================
+        const CONFIG = {
+            API_KEY: 'AIzaSyANYvyD_rA1jEF3U07t9mXrgXDlOP9UW7k',
+            SPREADSHEET_ID: '1L8uarTpSGHoqT5SI9TAwxD09ewfO4eXa2rFhlSA3Uhw',
+            SHEET_NAME: 'Training Schedule'
+        };
+        // ==========================================
+        // END CONFIGURATION
+        // ==========================================
+
+        let allData = [];
+        let filteredData = [];
+        let headers = [];
+        let displayHeaders = [];
+
+        const teamFilter = document.getElementById('teamFilter');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const resultsCount = document.getElementById('resultsCount');
+
+        teamFilter.addEventListener('change', applyFilters);
+
+        // Load data automatically when page loads
+        window.addEventListener('load', loadScheduleData);
+
+        async function loadScheduleData() {
+            showLoading();
+
+            try {
+                const url = `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SPREADSHEET_ID}/values/${CONFIG.SHEET_NAME}!A:U?key=${CONFIG.API_KEY}`;
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch data: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                
+                if (!data.values || data.values.length < 2) {
+                    throw new Error('No data found in the sheet');
+                }
+
+                // Row 2 is the header (index 1 in array since arrays are 0-indexed)
+                headers = data.values[1];
+                
+                // Create display headers (columns A to U excluding B)
+                // B is index 1, so we exclude it
+                displayHeaders = headers.filter((h, index) => index !== 1);
+                
+                // Process data rows (starting from row 3, which is index 2)
+                const rows = data.values.slice(2);
+
+                // Get today's date at midnight for comparison
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                // Filter rows where column B (index 1) is "Yes" or "yes" AND date is today or future
+                allData = rows
+                    .filter(row => {
+                        const columnB = row[1] || '';
+                        if (columnB.toLowerCase() !== 'yes') {
+                            return false;
+                        }
+
+                        // Find the Date column index
+                        const dateColumnIndex = headers.findIndex(h => h === 'Date');
+                        if (dateColumnIndex === -1) {
+                            return true; // If no Date column found, include the row
+                        }
+
+                        const dateValue = row[dateColumnIndex] || '';
+                        if (!dateValue) {
+                            return true; // If no date value, include the row
+                        }
+
+                        // Parse the date (supports formats like DD/MM/YYYY, MM/DD/YYYY, YYYY-MM-DD)
+                        const dateParts = dateValue.split(/[-\/]/);
+                        let rowDate;
+                        
+                        if (dateParts.length === 3) {
+                            // Try DD/MM/YYYY format first (common in many regions)
+                            if (parseInt(dateParts[0]) <= 31 && parseInt(dateParts[1]) <= 12) {
+                                rowDate = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+                            } else {
+                                // Try MM/DD/YYYY or YYYY-MM-DD
+                                rowDate = new Date(dateValue);
+                            }
+                        } else {
+                            rowDate = new Date(dateValue);
+                        }
+
+                        // Check if date is valid and is today or future
+                        if (isNaN(rowDate.getTime())) {
+                            return true; // If date is invalid, include the row
+                        }
+
+                        rowDate.setHours(0, 0, 0, 0);
+                        return rowDate >= today;
+                    })
+                    .map(row => {
+                        const obj = {};
+                        headers.forEach((header, index) => {
+                            obj[header] = row[index] || '';
+                        });
+                        return obj;
+                    });
+
+                populateFilters();
+                applyFilters();
+                
+                teamFilter.disabled = false;
+
+            } catch (error) {
+                showError(error.message);
+                console.error('Error:', error);
+            }
+        }
+
+        function populateFilters() {
+            // Fixed list of teams in specific order
+            const teams = [
+                'JH1 Boys', 'JH2 Boys', 'JH3 Boys', 'JH4 Boys', 'SH1 Boys', 'SH2 Boys',
+                'JH1 Girls', 'JH2 Girls', 'JH3 Girls', 'JH4 Girls', 'SH1 Girls', 'SH2 Girls'
+            ];
+
+            teamFilter.innerHTML = '<option value="">All Teams</option>';
+            teams.forEach(team => {
+                const option = document.createElement('option');
+                option.value = team;
+                option.textContent = team;
+                teamFilter.appendChild(option);
+            });
+        }
+
+        function applyFilters() {
+            const selectedTeam = teamFilter.value;
+
+            filteredData = allData.filter(row => {
+                // Check Team filter
+                let matchesTeam = true;
+                if (selectedTeam) {
+                    const teamValue = row['Team(s)'] || '';
+                    if (teamValue) {
+                        // Split by comma and trim whitespace
+                        const rowTeams = teamValue.split(',').map(t => t.trim());
+                        matchesTeam = rowTeams.includes(selectedTeam);
+                    } else {
+                        matchesTeam = false;
+                    }
+                }
+
+                return matchesTeam;
+            });
+
+            // Sort by date in chronological order
+            filteredData.sort((a, b) => {
+                const dateA = parseDate(a['Date']);
+                const dateB = parseDate(b['Date']);
+                return dateA - dateB;
+            });
+
+            displayResults();
+        }
+
+        function parseDate(dateValue) {
+            if (!dateValue) return new Date(0);
+            
+            const dateParts = dateValue.split(/[-\/]/);
+            if (dateParts.length === 3) {
+                // Try DD/MM/YYYY format first
+                if (parseInt(dateParts[0]) <= 31 && parseInt(dateParts[1]) <= 12) {
+                    return new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+                } else {
+                    return new Date(dateValue);
+                }
+            }
+            return new Date(dateValue);
+        }
+
+        function displayResults() {
+            resultsCount.textContent = `${filteredData.length} result${filteredData.length !== 1 ? 's' : ''}`;
+            resultsCount.classList.remove('hidden');
+
+            if (filteredData.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        <h3>No results found</h3>
+                        <p>Try adjusting your filters</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let tableHTML = `
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+            `;
+
+            // Display headers excluding column B
+            displayHeaders.forEach(header => {
+                tableHTML += `<th>${header}</th>`;
+            });
+
+            tableHTML += `
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            filteredData.forEach(row => {
+                tableHTML += '<tr>';
+                // Display data for all columns except column B (index 1)
+                headers.forEach((header, index) => {
+                    if (index !== 1) { // Skip column B
+                        const cellValue = row[header] || '';
+                        // Columns O to U are indices 14 to 20 (0-indexed)
+                        // Highlight if not empty and not "NA"
+                        const isHighlightColumn = index >= 14 && index <= 20;
+                        const shouldHighlight = isHighlightColumn && cellValue && cellValue.toUpperCase() !== 'NA';
+                        const highlightClass = shouldHighlight ? ' style="background-color: #fff3cd; font-weight: 600; color: #856404;"' : '';
+                        tableHTML += `<td${highlightClass}>${cellValue}</td>`;
+                    }
+                });
+                tableHTML += '</tr>';
+            });
+
+            tableHTML += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            resultsContainer.innerHTML = tableHTML;
+        }
+
+        function showLoading() {
+            resultsContainer.innerHTML = `
+                <div class="loading-state">
+                    <div class="loading-spinner"></div>
+                    <h3>Loading schedule data...</h3>
+                    <p>Please wait while we fetch your data</p>
+                </div>
+            `;
+            resultsCount.classList.add('hidden');
+        }
+
+        function showError(message) {
+            resultsContainer.innerHTML = `
+                <div class="error-state">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <h3>Error loading data</h3>
+                    <p>${message}</p>
+                </div>
+            `;
+            resultsCount.classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
