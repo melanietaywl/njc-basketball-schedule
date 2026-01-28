@@ -350,9 +350,10 @@
                 // Row 2 is the header (index 1 in array since arrays are 0-indexed)
                 headers = data.values[1];
                 
-                // Create display headers (columns A to U excluding B, A, and D)
-                // Exclude: B (index 1), A (index 0), D (index 3)
-                displayHeaders = headers.filter((h, index) => index !== 0 && index !== 1 && index !== 3);
+                // Create display headers in custom sequence: F to I, C, J to T
+                // F=5, G=6, H=7, I=8, C=2, J=9, K=10, L=11, M=12, N=13, O=14, P=15, Q=16, R=17, S=18, T=19
+                const displayOrder = [5, 6, 7, 8, 2, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
+                displayHeaders = displayOrder.map(index => headers[index]);
                 
                 // Process data rows (starting from row 3, which is index 2)
                 const rows = data.values.slice(2);
@@ -521,17 +522,17 @@
 
             filteredData.forEach(row => {
                 tableHTML += '<tr>';
-                // Display data for all columns except B (index 1), A (index 0), and D (index 3)
-                headers.forEach((header, index) => {
-                    if (index !== 0 && index !== 1 && index !== 3) { // Skip columns A, B, and D
-                        const cellValue = row[header] || '';
-                        // Columns O to U are indices 14 to 20 (0-indexed)
-                        // Highlight if not empty and not "NA"
-                        const isHighlightColumn = index >= 14 && index <= 20;
-                        const shouldHighlight = isHighlightColumn && cellValue && cellValue.toUpperCase() !== 'NA';
-                        const highlightClass = shouldHighlight ? ' style="background-color: #fff3cd; font-weight: 600; color: #856404;"' : '';
-                        tableHTML += `<td${highlightClass}>${cellValue}</td>`;
-                    }
+                // Display columns in custom sequence: F to I, C, J to T
+                const displayOrder = [5, 6, 7, 8, 2, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
+                displayOrder.forEach(index => {
+                    const header = headers[index];
+                    const cellValue = row[header] || '';
+                    // Columns O to T are indices 14 to 19 (0-indexed)
+                    // Highlight if not empty and not "NA"
+                    const isHighlightColumn = index >= 14 && index <= 19;
+                    const shouldHighlight = isHighlightColumn && cellValue && cellValue.toUpperCase() !== 'NA';
+                    const highlightClass = shouldHighlight ? ' style="background-color: #fff3cd; font-weight: 600; color: #856404;"' : '';
+                    tableHTML += `<td${highlightClass}>${cellValue}</td>`;
                 });
                 tableHTML += '</tr>';
             });
